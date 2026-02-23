@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The SaaS Homepage Sequence</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a08;
+    --ink: #f0ede6;
+    --ink-dim: #7a7870;
+    --accent: #e8c547;
+    --accent2: #e05a3a;
+    --accent3: #4a9eff;
+    --rule: rgba(240,237,230,0.1);
+    --card: rgba(240,237,230,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.6;
+  }
+
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 80px 40px 120px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 80px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .eyebrow::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.5;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 6vw, 68px);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .subhead {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--ink-dim);
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  /* The three-step sequence */
+  .sequence {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2px;
+    margin-bottom: 80px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.2s forwards;
+  }
+
+  .step {
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s ease;
+  }
+
+  .step:hover { background: var(--card); }
+
+  .step-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 900;
+    line-height: 1;
+    opacity: 0.08;
+    position: absolute;
+    top: 20px;
+    right: 24px;
+  }
+
+  .step-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  .step:nth-child(1) .step-label { background: rgba(232,197,71,0.15); color: var(--accent); }
+  .step:nth-child(2) .step-label { background: rgba(224,90,58,0.15); color: var(--accent2); }
+  .step:nth-child(3) .step-label { background: rgba(74,158,255,0.15); color: var(--accent3); }
+
+  .step-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .step-desc {
+    font-size: 13.5px;
+    font-weight: 300;
+    color: var(--ink-dim);
+    line-height: 1.65;
+  }
+
+  .step-border {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+  .step:nth-child(1) .step-border { background: var(--accent); }
+  .step:nth-child(2) .step-border { background: var(--accent2); }
+  .step:nth-child(3) .step-border { background: var(--accent3); }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 60px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.3s forwards;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .divider-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    white-space: nowrap;
+  }
+
+  /* Examples grid */
+  .examples-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.35s forwards;
+  }
+
+  .examples {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.4s forwards;
+  }
+
+  .example {
+    padding: 28px 32px;
+    border-left: 1px solid var(--rule);
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+
+  .example:hover {
+    background: var(--card);
+    border-left-color: rgba(240,237,230,0.25);
+  }
+
+  .example-company {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .example-num {
+    font-size: 9px;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+
+  .example-sequence {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .seq-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .seq-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .tag-m { background: rgba(232,197,71,0.12); color: var(--accent); }
+  .tag-r { background: rgba(224,90,58,0.12); color: var(--accent2); }
+  .tag-res { background: rgba(74,158,255,0.12); color: var(--accent3); }
+
+  .seq-text {
+    color: rgba(240,237,230,0.75);
+    font-weight: 300;
+  }
+
+  /* Key insight */
+  .insight {
+    margin-top: 60px;
+    padding: 48px;
+    border: 1px solid var(--rule);
+    position: relative;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.6s forwards;
+  }
+
+  .insight::before {
+    content: '"';
+    font-family: 'Playfair Display', serif;
+    font-size: 160px;
+    line-height: 1;
+    color: var(--accent);
+    opacity: 0.08;
+    position: absolute;
+    top: -20px;
+    left: 30px;
+  }
+
+  .insight-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 2.5vw, 26px);
+    font-weight: 400;
+    line-height: 1.5;
+    font-style: italic;
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+  }
+
+  .insight-source {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    margin-top: 24px;
+    text-transform: uppercase;
+  }
+
+  /* PAS Bridge */
+  .pas-bridge {
+    margin-bottom: 60px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.25s forwards;
+  }
+
+  .pas-bridge-inner {
+    padding: 40px 48px;
+    background: linear-gradient(135deg, rgba(232,197,71,0.06) 0%, rgba(224,90,58,0.04) 50%, rgba(74,158,255,0.06) 100%);
+    border: 1px solid rgba(232,197,71,0.2);
+    position: relative;
+  }
+
+  .pas-bridge-inner::before {
+    content: 'PAS';
+    font-family: 'Playfair Display', serif;
+    font-size: 120px;
+    font-weight: 900;
+    position: absolute;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.04;
+    letter-spacing: -0.05em;
+    color: var(--ink);
+    pointer-events: none;
+  }
+
+  .pas-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .pas-text {
+    font-size: 14px;
+    font-weight: 300;
+    color: rgba(240,237,230,0.8);
+    line-height: 1.7;
+    max-width: 680px;
+    margin-bottom: 24px;
+  }
+
+  .pas-stat {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+
+  /* Flow arrow between sequence steps */
+  @media (min-width: 640px) {
+    .sequence {
+      position: relative;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .sequence { grid-template-columns: 1fr; }
+    .examples { grid-template-columns: 1fr; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="eyebrow">PAS Framework · B2B SaaS Product Messaging</div>
+    <h1>The three-move<br>sequence <em>behind</em><br>every great SaaS page</h1>
+    <p class="subhead">Problem–Agitate–Solution, re-engineered for B2B SaaS. The best-converting homepages aren't selling a product — they're running a structured belief conversion that turns skeptical top execs into believers in under 30 seconds.</p>
+  </div>
+
+  <div class="sequence">
+    <div class="step">
+      <div class="step-number">P</div>
+      <span class="step-label">Problem · Mirror</span>
+      <div class="step-title">Name the pain they already feel</div>
+      <div class="step-desc">The P in PAS. Hold up a mirror before touching the product. For B2B, this means naming an executive-level pain — revenue, risk, or operational drag. The more precisely the copy names the feeling, the stronger the identification. The visitor should feel seen, not sold to.</div>
+      <div class="step-border"></div>
+    </div>
+    <div class="step">
+      <div class="step-number">A</div>
+      <span class="step-label">Agitate · Reframe</span>
+      <div class="step-title">Make their current reality feel optional</div>
+      <div class="step-desc">The A in PAS — and the move most B2B pages skip entirely. The current pain isn't inevitable, it's a design choice. For skeptical executives, this is critical: without agitation, there's no urgency. With it, staying still starts to feel like a strategic error.</div>
+      <div class="step-border"></div>
+    </div>
+    <div class="step">
+      <div class="step-number">S</div>
+      <span class="step-label">Solution · Resolution</span>
+      <div class="step-title">Introduce the product as the natural conclusion</div>
+      <div class="step-desc">The S in PAS. By now the executive has moved from skeptic to curious. The product doesn't need to be sold — it just needs to be presented as the obvious answer to the question the page already asked. Thirty seconds in, they're believers.</div>
+      <div class="step-border"></div>
+    </div>
+  </div>
+
+  <div class="pas-bridge">
+    <div class="pas-bridge-inner">
+      <div class="pas-label">Why PAS works on B2B executives</div>
+      <p class="pas-text">Traditional PAS was built for consumers. B2B SaaS re-engineers it for a different psychology: executives are paid to be skeptical, they've seen dozens of pitches, and they're pattern-matching for risk — not benefit. The sequence works because it never feels like a pitch. It feels like someone finally articulating the thing they've been frustrated by for months. By the time the solution appears, the exec isn't evaluating — they're relieved.</p>
+      <div class="pas-stat">Under 30 seconds. Skeptic → Believer.</div>
+    </div>
+  </div>
+
+  <div class="divider">
+    <span class="divider-text">10 examples, mechanics exposed</span>
+  </div>
+
+  <div class="examples-label">Case studies</div>
+
+  <div class="examples">
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">01</span> Basecamp</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">"Working remotely?" — names the situation before anything else</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">Remote work is chaotic and scattered by default</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">Basecamp makes it calm and organized</span></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">02</span> Linear</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">You're using issue trackers that feel like bureaucracy</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">Dev tools shouldn't slow down development</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">"The issue tracker you'll enjoy using" — enjoy implies every other is tolerated</span></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">03</span> Superhuman</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">You spend hours in email. It's not optional.</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">That time is wasted because your tool is slow</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">Superhuman makes email a competitive advantage</span></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">04</span> Figma</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">Design teams are fragmented — designers, feedback, handoff all separate</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">That fragmentation is a tooling problem, not an inevitability</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">"Design together" — two words, three moves</span></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">05</span> Notion</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">You're using five tools and none of them talk to each other</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">That's a fragmentation problem — and it's solvable</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">"One workspace. Every team." — every closes the objection before it forms</span></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">06</span> Loom</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">You're writing long emails for things that should take two minutes</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">Text can't carry tone, context, or nuance</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">"Say it with video" — makes typed comms feel like the wrong tool</span></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">07</span> Intercom</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">Customers hit a wall of help docs and ticket queues</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">Inhuman support isn't a resource constraint — it's a design choice</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">"Conversations" — repositions every ticket system as a failure mode</span></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">08</span> Stripe</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">Building payments is an engineering nightmare</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">It doesn't have to be your problem to solve from scratch</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">"Infrastructure" implies it already exists — you're connecting, not building</span></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">09</span> Calendly</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">Scheduling a meeting takes six emails</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">That back-and-forth is friction technology already knows how to eliminate</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">Send a link. They pick a time. Done. The gap between 6 emails and 1 link is the entire conversion.</span></div>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example-company"><span class="example-num">10</span> Slack</div>
+      <div class="example-sequence">
+        <div class="seq-row"><span class="seq-tag tag-m">Mirror</span><span class="seq-text">Work is fragmented across email, texts, and unnecessary meetings</span></div>
+        <div class="seq-row"><span class="seq-tag tag-r">Reframe</span><span class="seq-text">The problem isn't people — it's the medium</span></div>
+        <div class="seq-row"><span class="seq-tag tag-res">Resolve</span><span class="seq-text">"Be less busy" — no product description, just the outcome you want</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="insight">
+    <p class="insight-text">The same words in the wrong order don't convert. PAS only works when the sequence is intact — Problem first, Agitation second, Solution last. Plenty of B2B pages have all three elements but lead with the product, bury the pain, and wonder why the CFO didn't respond to the demo request.</p>
+    <div class="insight-source">— The PAS sequence is the strategy, not the copy</div>
+  </div>
+
+</div>
+</body>
+</html>
